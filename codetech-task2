@@ -1,0 +1,78 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+# Sample Data (replace this with your actual dataset)
+data = {
+    'Age': [25, 30, 35, 40, 45, 50, 55, 60, 65, 70],
+    'Salary': [50000, 60000, 70000, 80000, 90000, 100000, 110000, 120000, 130000, 140000],
+    'Purchased': ['Yes', 'No', 'Yes', 'No', 'Yes', 'No', 'Yes', 'No', 'Yes', 'No']
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Preprocessing: Encode the target variable 'Purchased' as binary (1 for 'Yes', 0 for 'No')
+df['Purchased'] = df['Purchased'].apply(lambda x: 1 if x == 'Yes' else 0)
+
+# Features and Target
+X = df[['Age', 'Salary']]  # Features
+y = df['Purchased']  # Target
+
+# Split data into training and testing sets (80%-20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Feature Scaling: Apply Standard Scaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Define different models
+models = {
+    'Logistic Regression': LogisticRegression(),
+    'Support Vector Classifier (SVC)': SVC(),
+    'Random Forest Classifier': RandomForestClassifier(),
+    'Decision Tree Classifier': DecisionTreeClassifier()
+}
+
+# Function to evaluate models
+def evaluate_models(models, X_train, X_test, y_train, y_test):
+    results = []
+    
+    for model_name, model in models.items():
+        # Fit the model
+        model.fit(X_train, y_train)
+        
+        # Make predictions
+        y_pred = model.predict(X_test)
+        
+        # Evaluate using different metrics
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred)
+        recall = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
+        
+        # Store the results
+        results.append({
+            'Model': model_name,
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1 Score': f1,
+            'Confusion Matrix': cm
+        })
+    
+    return pd.DataFrame(results)
+
+# Evaluate the models
+model_comparison = evaluate_models(models, X_train_scaled, X_test_scaled, y_train, y_test)
+
+# Print results
+print(model_comparison)
